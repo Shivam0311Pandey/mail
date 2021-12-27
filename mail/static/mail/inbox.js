@@ -56,5 +56,27 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // Show the content
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+  .then(emails=>{
+    console.log(emails);
+    emails.forEach(displayContent);
+  });
 }
 
+function displayContent(content){
+  
+  // Show the content box
+  const element = document.createElement('div');
+  element.className = 'dropbox_content_box';
+  element.innerHTML = `<span class='sender'>${content.sender}</span> &nbsp <span>${content.subject}</span><span class='timestamp'>${content.timestamp}</span>`;
+  if(!`${content.read}`){
+    document.querySelector('.dropbox_content_box').style.backgroundColor = '#f8f8f8';
+  }
+  document.querySelector('.mailbox_content').append(element);
+  element.onclick = () =>{
+    console.log(`${content.id}`);
+  };
+}
