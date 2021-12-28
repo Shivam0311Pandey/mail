@@ -15,12 +15,15 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#compose-body').value = '';  
+
+  document.querySelector('.mailbox_content').innerHTML=" ";
+  document.querySelector('.view_content').innerHTML=" ";
+
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
-  console.log('Hello');  
 
   document.querySelector('#compose-form').onsubmit = () =>{
     // Get the compose content
@@ -53,6 +56,9 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  
+  document.querySelector('.mailbox_content').innerHTML=" ";
+  document.querySelector('.view_content').innerHTML=" ";
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -72,11 +78,38 @@ function displayContent(content){
   const element = document.createElement('div');
   element.className = 'dropbox_content_box';
   element.innerHTML = `<span class='sender'>${content.sender}</span> &nbsp <span>${content.subject}</span><span class='timestamp'>${content.timestamp}</span>`;
-  if(!`${content.read}`){
+  element.setAttribute('data-id', `${content.id}`);
+  document.querySelector('.mailbox_content').append(element);
+  if(`${content.read}`){
     document.querySelector('.dropbox_content_box').style.backgroundColor = '#f8f8f8';
   }
-  document.querySelector('.mailbox_content').append(element);
-  element.onclick = () =>{
-    console.log(`${content.id}`);
-  };
+  element.onclick = viewContent;
+  //() =>{console.log(`${content.id}`);}; 
+}
+
+function viewContent(){
+  const id = parseInt(this.dataset.id);
+  console.log(id);
+  fetch(`/emails/${id}`,{
+    method: 'PUT',
+    body: JSON.stringify({
+      "read": true
+    })
+  })
+  fetch(`/emails/${id}`)
+  .then(response => response.json())
+  .then(email =>{
+    document.querySelector('.mailbox_content').innerHTML=" ";
+    document.querySelector('#emails-view').style.display = 'none';
+    const element = document.querySelector('.view_content');
+    const firstPart = document.createElement('div');
+    firstPart.innerHTML=`<div><b>From:</b> ${email.sender}</div><div><b>To:</b> ${email.recipients}</div><div><b>Subject:</b> ${email.subject}</div><div><b>Timestamp:</b> ${email.timestamp}</div>`;
+    const secondPart = document.createElement('div');
+    secondPart.innerHTML = `<button class='btn btn-sm btn-outline-primary'>Reply</button>`;
+    const thirdPart = document.createElement('div');
+    thirdPart.innerHTML=`<hr>${email.body}`;
+    element.append(firstPart);
+    element.append(secondPart);
+    element.append(thirdPart);
+  });
 }
