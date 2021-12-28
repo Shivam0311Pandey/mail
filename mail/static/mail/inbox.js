@@ -121,6 +121,27 @@ function viewContent(){
     element.append(firstPart);
     element.append(secondPart);
     element.append(thirdPart);
+    if(email.user !== email.sender){
+      const fourthPart = document.createElement('div');
+      if(email.archived){
+        fourthPart.innerHTML= `<button class='btn btn-sm btn-outline-primary archive'>Unarchive</button>`;
+      } else{
+        fourthPart.innerHTML= `<button class='btn btn-sm btn-outline-primary archive'>Archive</button>`;
+      }
+      element.append(fourthPart);
+      document.querySelector('.archive').onclick = () =>{
+        fetch(`/emails/${id}`,{
+          method: 'PUT',
+          body: JSON.stringify({
+            'archived': !email.archived 
+          })
+        })
+        .then(()=>{
+          load_mailbox('inbox');
+        });
+        
+      }; 
+    } 
     document.querySelector('.reply').onclick = () =>{
       const r= email.sender;
       let s= email.subject;
